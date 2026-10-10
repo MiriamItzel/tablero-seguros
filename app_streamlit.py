@@ -282,24 +282,29 @@ with tab_cotiza:
               "bonus": c4.slider("Bonus-malus", 0, 25, 5)}
     if st.button("Cotizar", type="primary"):
             st.session_state["perfil"] = perfil
-    
+            p = st.session_state["perfil"]
+
+            pp_emp, n = cotizar_empirico(datos, p)
+            freq, sev, pp_glm, pp_tw = cotizar_glm(p, m_freq, m_sev, m_agg)
+            tarifa = pp_glm / (1 - gastos - margen)
+            
+            # guardar
+            try: 
+                hoja().append_row([
+                    pd.Timestamp.now().isoformat(),
+                    p["edad_conductor"], p["cobertura"], p["sexo"],
+                    p["uso"], p["combustible"], p["antiguedad"],
+                    p["potencia"], p["bonus"], round(pp_glm, 2), round(tarifa, 2)
+                    ])
+                st.success("Cotización guardada ✔")
+            except Exception as e:
+                st.error(f"No se pudo guardar en Google Sheets: {e}")
+
     if "perfil" in st.session_state:
         p = st.session_state["perfil"]
         pp_emp, n = cotizar_empirico(datos, p)
         freq, sev, pp_glm, pp_tw = cotizar_glm(p, m_freq, m_sev, m_agg)
         tarifa = pp_glm / (1 - gastos - margen)
-
-        # guardar
-        try:
-            hoja().append_row([
-                pd.Timestamp.now().isoformat(),
-                p["edad_conductor"], p["cobertura"], p["sexo"],
-                p["uso"], p["combustible"], p["antiguedad"],
-                p["potencia"], p["bonus"], round(pp_glm, 2), round(tarifa, 2)
-            ])
-            st.success("Cotización guardada ✔")
-        except Exception as e:
-            st.error(f"No se pudo guardar en Google Sheets: {e}")
     
         # KPIs del cotizador EN ORDEN: 1 lo que dice la data → 2 el modelo → 3 el precio
         k1, k2, k3 = st.columns(3)
