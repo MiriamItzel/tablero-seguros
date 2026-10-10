@@ -353,4 +353,3 @@ with tab_cotiza:
             st.dataframe(pd.DataFrame(datos_guardados).tail(10))
         except Exception as e:
             st.error(f"No se pudieron cargar las últimas cotizaciones: {e}")
-        st.dataframe(pd.DataFrame(hoja().get_all_records()).tail(10))
